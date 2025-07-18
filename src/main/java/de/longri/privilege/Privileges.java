@@ -19,7 +19,9 @@
 package de.longri.privilege;
 
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The Privileges class represents a collection of privileges.
@@ -92,10 +94,9 @@ import java.util.ArrayList;
  */
 public class Privileges {
 
+    final static AtomicBoolean SYNC = new AtomicBoolean(false);
+
     final static boolean NEED_A_REASON_COMMENT = true;
-
-    public final static Privileges INSTANCE = new Privileges();
-
 
 
     /**
@@ -107,8 +108,8 @@ public class Privileges {
      *
      * @see PRIVILEGE
      */
-    private final ArrayList<PRIVILEGE> ALL_PRIVILEGE_LIST = new ArrayList<>();
-    private final ArrayList<PRIVILEGE_GROUPS> ALL_PRIVILEGE_GROUPS_LIST = new ArrayList<>();
+    private static final ArrayList<PRIVILEGE> ALL_PRIVILEGE_LIST = new ArrayList<>();
+    private static final ArrayList<PRIVILEGE_GROUPS> ALL_PRIVILEGE_GROUPS_LIST = new ArrayList<>();
 
     /**
      * Creates a new privilege with the given name.
@@ -120,11 +121,11 @@ public class Privileges {
      * @return The newly created PRIVILEGE object.
      * @throws PrivilegeDoubleExistException If a privilege with the same name already exists.
      */
-    public PRIVILEGE create(String name) {
+    public static PRIVILEGE create(String name) {
         return create(name, false);
     }
 
-    public PRIVILEGE create(String name, boolean needAReasonComment) {
+    public static PRIVILEGE create(String name, boolean needAReasonComment) {
         // check if exist
         for (PRIVILEGE privilege : ALL_PRIVILEGE_LIST) {
             if (privilege.NAME.equals(name)) {
@@ -137,7 +138,7 @@ public class Privileges {
     }
 
 
-    public PRIVILEGE_GROUPS createGroup(int id, String name, PRIVILEGE... privileges) {
+    public static PRIVILEGE_GROUPS createGroup(int id, String name, PRIVILEGE... privileges) {
 
         for (PRIVILEGE_GROUPS group : ALL_PRIVILEGE_GROUPS_LIST) {
             if (group.ID == id) {
@@ -153,7 +154,7 @@ public class Privileges {
         return group;
     }
 
-    public PRIVILEGE_GROUPS createGroup(int id, String name, PRIVILEGE_GROUPS... groups) {
+    public static PRIVILEGE_GROUPS createGroup(int id, String name, PRIVILEGE_GROUPS... groups) {
 
         for (PRIVILEGE_GROUPS group : ALL_PRIVILEGE_GROUPS_LIST) {
             if (group.ID == id) {
@@ -169,7 +170,7 @@ public class Privileges {
         return group;
     }
 
-    protected PRIVILEGE getPrivilege(String name) {
+    protected static PRIVILEGE getPrivilege(String name) {
         for (PRIVILEGE privilege : ALL_PRIVILEGE_LIST) {
             if (privilege.NAME.equals(name)) {
                 return privilege;
@@ -178,7 +179,7 @@ public class Privileges {
         return null;
     }
 
-    protected PRIVILEGE_GROUPS getPrivilegeGroup(String name) {
+    protected static PRIVILEGE_GROUPS getPrivilegeGroup(String name) {
         for (PRIVILEGE_GROUPS group : ALL_PRIVILEGE_GROUPS_LIST) {
             if (group.Name.equals(name)) {
                 return group;
@@ -208,7 +209,7 @@ public class Privileges {
      * @param o         The operation to be performed.
      * @throws PrivilegedActionException If the user does not have the specified privilege.
      */
-    public void perform(User user, PRIVILEGE privilege, perform o) {
+    public static void perform(User user, PRIVILEGE privilege, perform o) {
         if (!user.hasPrivilege(privilege))
             throw new PrivilegedActionException(user);
         o.run();

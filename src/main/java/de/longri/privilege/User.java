@@ -47,6 +47,7 @@ public class User implements iUserPrivileges, DbEntity {
     private String email;
     private int companyId;
     private int departmentId;
+    private String privstring;
 
     public User() {
         this(-2, "");
@@ -132,8 +133,8 @@ public class User implements iUserPrivileges, DbEntity {
         this.companyId = rs.getInt("company_Id");
         this.departmentId = rs.getInt("department_Id");
 
-        String privs = rs.getString("permissions");
-        setUserPrivilegesFromJsonString(this, privs);
+        privstring = rs.getString("permissions");
+
     }
 
 
@@ -213,10 +214,17 @@ public class User implements iUserPrivileges, DbEntity {
         user.departmentId = this.departmentId;
         user.PRIVILEGEGROUPS_LIST.addAll(PRIVILEGEGROUPS_LIST);
         user.PRIVILEGE_LIST.addAll(PRIVILEGE_LIST);
+        user.privstring = privstring;
         return user;
     }
 
     public String getPrivilegesJson() {
+
+        if (privstring != null) {
+            return privstring;
+        }
+
+
         try {
             JSONObject json = new JSONObject();
 
@@ -287,11 +295,6 @@ public class User implements iUserPrivileges, DbEntity {
     }
 
     public boolean hasPrivilege(PRIVILEGE_GROUPS... groups) {
-
-        for (PRIVILEGE_GROUPS group : groups) {
-            if (PRIVILEGEGROUPS_LIST.contains(group)) return true;
-            if (hasPrivilege(group, PRIVILEGEGROUPS_LIST)) return true;
-        }
         return false;
     }
 
@@ -312,7 +315,15 @@ public class User implements iUserPrivileges, DbEntity {
         }
     }
 
-    public final static void setUserPrivilegesFromJsonString( User user, String jsonString) {
+    public void initialPrivilege() {
+        if (this.privstring != null) {
+            setUserPrivilegesFromJsonString(this, privstring);
+            privstring = null;
+        }
+    }
+
+
+    public final static void setUserPrivilegesFromJsonString(User user, String jsonString) {
         JSONObject jsonObj = null;
         try {
             jsonObj = new JSONObject(jsonString);
@@ -328,7 +339,7 @@ public class User implements iUserPrivileges, DbEntity {
                         String key = keys.next();      // Name, z.B. "lizenz.view"
                         String statusString = obj.getString(key); // Wert, z.B. "NONE"
 
-                        PRIVILEGE privilege = Privileges.INSTANCE.getPrivilege(key);
+                        PRIVILEGE privilege = Privileges.getPrivilege(key);
                         PRIVILEGE_STATUS status = PRIVILEGE_STATUS.valueOf(statusString);
 
                         if (privilege != null) {
@@ -342,7 +353,7 @@ public class User implements iUserPrivileges, DbEntity {
                 JSONArray array = jsonObj.getJSONArray("groups");
                 for (int i = 0; i < array.length(); i++) {
                     String name = array.get(i).toString();
-                    PRIVILEGE_GROUPS group = Privileges.INSTANCE.getPrivilegeGroup(name);
+                    PRIVILEGE_GROUPS group = Privileges.getPrivilegeGroup(name);
                     user.addGroup(group);
                 }
             }

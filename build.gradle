@@ -5,17 +5,17 @@ plugins {
 }
 
 group = 'de.longri'
-version = '1.0'
+version = '1.11'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation 'org.springframework:spring-jdbc:7.0.0-M6'
+    implementation 'org.springframework:spring-jdbc:7.0.0-M7'
 
     // Spring Framework Komponenten-Support
-    implementation 'org.springframework:spring-context:7.0.0-M6'
+    implementation 'org.springframework:spring-context:7.0.0-M7'
 
     // JSON Bibliothek
     implementation 'org.json:json:20250517'
